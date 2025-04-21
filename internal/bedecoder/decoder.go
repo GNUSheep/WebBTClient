@@ -3,7 +3,6 @@ package bedecoder
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -30,7 +29,7 @@ func NewDecoder(filepath string) *Decoder {
 	return d
 }
 
-func (d *Decoder) decodeInt() (string, error) {
+func (d *Decoder) decodeInt() (int64, error) {
 	var buffer []byte
 
 	for {
@@ -40,19 +39,24 @@ func (d *Decoder) decodeInt() (string, error) {
 		}
 
 		if err == io.EOF {
-			return "", errors.New("Missing 'e' terminator after integer")
+			return 0, errors.New("Missing 'e' terminator after integer")
 		}
 		if !unicode.IsDigit(rune(b)) && b != '-' {
-			return "", errors.New("Integer contains not-digit characters")
+			return 0, errors.New("Integer contains not-digit characters")
 		}
 		if err != nil {
-			return "", err
+			return 0, err
 		}
 
 		buffer = append(buffer, b)
 	}
 
-	return string(buffer), nil
+	buffer_int, err := strconv.ParseInt(string(buffer), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return buffer_int, nil
 }
 
 func (d *Decoder) decodeByteString() (string, error) {
@@ -194,7 +198,7 @@ func (d *Decoder) handleByte(b byte) (any, error) {
 	}
 }
 
-func (d *Decoder) Decode() {
+func (d *Decoder) Decode() any {
 	b, err := d.reader.ReadByte()
 	if err != nil {
 		log.Fatal("Error while reading a torrent file: ", err)
@@ -204,6 +208,7 @@ func (d *Decoder) Decode() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%#v\n", output.(map[string]any))
+
+	return output
 
 }

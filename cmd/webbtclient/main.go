@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	decoder := bedecoder.NewDecoder("paw")
-	decoder.Decode()
+	decoder := bedecoder.NewDecoder("file.torrent")
+	torrent_file := decoder.Decode()
 }
